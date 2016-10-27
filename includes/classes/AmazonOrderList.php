@@ -219,11 +219,7 @@ class AmazonOrderList extends AmazonOrderCore implements Iterator{
         }
 
         //reset to store's default marketplace
-        if (file_exists($this->config)){
-            include($this->config);
-        } else {
-            throw new Exception('Config file does not exist!');
-        }
+        extract($this->config);
         if(isset($store[$this->storeName]) && array_key_exists('marketplaceId', $store[$this->storeName])){
             $this->options['MarketplaceId.Id.1'] = $store[$this->storeName]['marketplaceId'];
         } else {

@@ -123,12 +123,9 @@ abstract class AmazonCore{
      * @param array|string $m [optional] <p>The files (or file) to use in Mock Mode.
      * When Mock Mode is enabled, the object will retrieve one of these files
      * from the list to use as a response. See <i>setMock</i> for more information.</p>
-     * @param string $config [optional] <p>An alternate config file to set. Used for testing.</p>
+     * @param string $config [optional] <p>An alternate config array to set. Used for testing.</p>
      */
     protected function __construct($s = null, $mock = false, $m = null, $config = null){
-        if (is_null($config)){
-            $config = __DIR__.'/../../amazon-config.php';
-        }
         $this->setConfig($config);
         $this->setStore($s);
         $this->setMock($mock,$m);
@@ -353,20 +350,18 @@ abstract class AmazonCore{
      * This method can be used to change the config file after the object has
      * been initiated. The file will not be set if it cannot be found or read.
      * This is useful for testing, in cases where you want to use a different file.
-     * @param string $path <p>The path to the config file.</p>
+     * @param array $config <p>A configration array.</p>
      * @throws Exception If the file cannot be found or read.
      */
-    public function setConfig($path){
-        if (file_exists($path) && is_readable($path)){
-            include($path);
-            $this->config = $path;
-            $this->setLogPath($logpath);
-            if (isset($AMAZON_SERVICE_URL)) {
-                $this->urlbase = rtrim($AMAZON_SERVICE_URL, '/') . '/';
-            }
-        } else {
-            throw new Exception("Config file does not exist or cannot be read! ($path)");
+    public function setConfig($config){
+        if (empty($config) || empty($config['store'])) {
+            throw new Exception("Config is invalid or missing required parameters!");
         }
+
+        $this->config = $config;
+        extract($this->config);
+        $this->setLogPath(isset($logpath) ? $logpath : __DIR__.'/log.txt');
+        $this->urlbase = (isset($AMAZON_SERVICE_URL)) ? rtrim($AMAZON_SERVICE_URL, '/') . '/' : 'https://mws.amazonservices.com/';
     }
     
     /**
@@ -399,11 +394,7 @@ abstract class AmazonCore{
      * @throws Exception If the file can't be found.
      */
     public function setStore($s=null){
-        if (file_exists($this->config)){
-            include($this->config);
-        } else {
-            throw new Exception("Config file does not exist!");
-        }
+        extract($this->config);
         
         if (empty($store) || !is_array($store)) {
             throw new Exception("No stores defined!");
@@ -467,12 +458,8 @@ abstract class AmazonCore{
     protected function log($msg, $level = 'Info'){
         if ($msg != false) {
             $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            
-            if (file_exists($this->config)){
-                include($this->config);
-            } else {
-                throw new Exception("Config file does not exist!");
-            }
+
+            extract($this->config);
             if (isset($logfunction) && $logfunction != '' && function_exists($logfunction)){
                 switch ($level){
                    case('Info'): $loglevel = LOG_INFO; break; 
@@ -577,12 +564,7 @@ abstract class AmazonCore{
      * @throws Exception if config file or secret key is missing
      */
     protected function genQuery(){
-        if (file_exists($this->config)){
-            include($this->config);
-        } else {
-            throw new Exception("Config file does not exist!");
-        }
-        
+        extract($this->config);
         if (array_key_exists($this->storeName, $store) && array_key_exists('secretKey', $store[$this->storeName])){
             $secretKey = $store[$this->storeName]['secretKey'];
         } else {
