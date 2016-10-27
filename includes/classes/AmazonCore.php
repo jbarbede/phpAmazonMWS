@@ -360,7 +360,7 @@ abstract class AmazonCore{
 
         $this->config = $config;
         extract($this->config);
-        $this->setLogPath(isset($logpath) ? $logpath : __DIR__.'/log.txt');
+        $this->setLogPath(isset($logpath) ? $logpath : tempnam(sys_get_temp_dir(), 'log'));
         $this->urlbase = (isset($AMAZON_SERVICE_URL)) ? rtrim($AMAZON_SERVICE_URL, '/') . '/' : 'https://mws.amazonservices.com/';
     }
     
