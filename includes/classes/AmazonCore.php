@@ -588,8 +588,8 @@ abstract class AmazonCore{
     protected function sendRequest($url,$param){
         $this->log("Making request to Amazon: ".$this->options['Action']);
         $response = $this->fetchURL($url,$param);
-        
-        while ($response['code'] == '503' && $this->throttleStop==false){
+
+        while (!empty($response['code']) && $response['code'] == '503' && $this->throttleStop==false){
             $this->sleep();
             $response = $this->fetchURL($url,$param);
         }
