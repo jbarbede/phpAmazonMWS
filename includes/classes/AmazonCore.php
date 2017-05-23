@@ -746,7 +746,8 @@ abstract class AmazonCore{
         $ch = curl_init();
         
         curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch,CURLOPT_TIMEOUT, 0);
+        curl_setopt($ch,CURLOPT_TIMEOUT, 300);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT, 300);
         curl_setopt($ch,CURLOPT_FORBID_REUSE, 1);
         curl_setopt($ch,CURLOPT_FRESH_CONNECT, 1);
         curl_setopt($ch,CURLOPT_HEADER, 1);
