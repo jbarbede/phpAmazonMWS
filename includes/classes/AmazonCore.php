@@ -684,10 +684,12 @@ abstract class AmazonCore{
     public function getLastErrorCode() {
         $last = $this->getLastErrorResponse();
         if (!empty($last['body'])) {
+            libxml_use_internal_errors(true);
             $xml = simplexml_load_string($last['body']);
-            if (isset($xml->Error->Code)) {
+            if ($xml !== false && isset($xml->Error->Code)) {
                 return $xml->Error->Code;
             }
+            error_log('Bad XML received from Amazon API: ' . $last['body']);
         }
     }
 
