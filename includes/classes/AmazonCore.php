@@ -338,9 +338,10 @@ abstract class AmazonCore{
         if ($r['code'] == 200){
             return true;
         } else {
-            $xml = @simplexml_load_string($r['body']);
-            if (!$xml) {
-                $this->log($xml,'Urgent');
+            libxml_use_internal_errors(true);
+            $xml = simplexml_load_string($r['body']);
+            if ($xml === false) {
+                $this->log($r['body'],'Urgent');
             } else {
                 if (isset($xml->Error->Code)) {
                     $this->log("Bad Response! ".$r['code']." ".$r['error'].": ".$xml->Error->Code." - ".$xml->Error->Message,'Urgent');
@@ -689,7 +690,7 @@ abstract class AmazonCore{
             if ($xml !== false && isset($xml->Error->Code)) {
                 return $xml->Error->Code;
             }
-            error_log('Bad XML received from Amazon API: ' . $last['body']);
+            $this->log('Bad XML received from Amazon API (getLastErrorCode): ' . $last['body'],'Urgent');
         }
     }
 
@@ -703,10 +704,12 @@ abstract class AmazonCore{
     public function getLastErrorMessage() {
         $last = $this->getLastErrorResponse();
         if (!empty($last['body'])) {
+            libxml_use_internal_errors(true);
             $xml = simplexml_load_string($last['body']);
-            if (isset($xml->Error->Message)) {
+            if ($xml !== false && isset($xml->Error->Message)) {
                 return $xml->Error->Message;
             }
+            $this->log('Bad XML received from Amazon API (getLastErrorMessage): ' . $last['body'],'Urgent');
         }
     }
     
